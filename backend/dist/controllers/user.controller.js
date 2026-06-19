@@ -1,0 +1,139 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.getTopReaders = exports.markNotificationsRead = exports.getNotifications = exports.getReadHistory = exports.updateBookmark = exports.getBookmarks = exports.getProfile = void 0;
+const prisma_1 = __importDefault(require("../utils/prisma"));
+const getProfile = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await prisma_1.default.user.findUnique({
+            where: { id },
+            select: {
+                id: true, username: true, avatar: true, role: true, createdAt: true,
+                _count: { select: { translations: true } }
+            }
+        });
+        if (!user)
+            return res.status(404).json({ error: 'Foydalanuvchi topilmadi' });
+        if (user.role === 'TRANSLATOR') {
+            const mangas = await prisma_1.default.manga.findMany({
+                where: { translatorId: id },
+                include: { _count: { select: { chapters: true } } }
+            });
+            return res.json({ ...user, mangas });
+        }
+        res.json(user);
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.getProfile = getProfile;
+const getBookmarks = async (req, res) => {
+    try {
+        const { status } = req.query;
+        const where = { userId: req.user.id };
+        if (status)
+            where.status = status;
+        const bookmarks = await prisma_1.default.bookmark.findMany({
+            where,
+            include: {
+                manga: {
+                    include: { _count: { select: { chapters: true } } }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+        res.json(bookmarks);
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.getBookmarks = getBookmarks;
+const updateBookmark = async (req, res) => {
+    try {
+        const { mangaId, status } = req.body;
+        const bookmark = await prisma_1.default.bookmark.upsert({
+            where: { userId_mangaId: { userId: req.user.id, mangaId } },
+            update: { status },
+            create: { userId: req.user.id, mangaId, status }
+        });
+        res.json(bookmark);
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.updateBookmark = updateBookmark;
+const getReadHistory = async (req, res) => {
+    try {
+        const history = await prisma_1.default.readHistory.findMany({
+            where: { userId: req.user.id },
+            orderBy: { updatedAt: 'desc' },
+            take: 20,
+            include: {
+                manga: { select: { id: true, title: true, slug: true, cover: true } },
+                chapter: { select: { number: true, title: true } }
+            }
+        });
+        res.json(history);
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.getReadHistory = getReadHistory;
+const getNotifications = async (req, res) => {
+    try {
+        const notifications = await prisma_1.default.notification.findMany({
+            where: { userId: req.user.id },
+            orderBy: { createdAt: 'desc' },
+            take: 20
+        });
+        const unread = await prisma_1.default.notification.count({
+            where: { userId: req.user.id, isRead: false }
+        });
+        res.json({ notifications, unread });
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.getNotifications = getNotifications;
+const markNotificationsRead = async (req, res) => {
+    try {
+        await prisma_1.default.notification.updateMany({
+            where: { userId: req.user.id, isRead: false },
+            data: { isRead: true }
+        });
+        res.json({ success: true });
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.markNotificationsRead = markNotificationsRead;
+const getTopReaders = async (req, res) => {
+    try {
+        const readers = await prisma_1.default.user.findMany({
+            where: { role: 'READER' },
+            take: 4,
+            include: { _count: { select: { readHistory: true, comments: true } } },
+            orderBy: { createdAt: 'asc' }
+        });
+        res.json(readers.map(r => ({
+            id: r.id,
+            username: r.username,
+            avatar: r.avatar,
+            xp: r._count.readHistory * 10 + r._count.comments * 5
+        })).sort((a, b) => b.xp - a.xp));
+    }
+    catch {
+        res.status(500).json({ error: 'Server xatosi' });
+    }
+};
+exports.getTopReaders = getTopReaders;
+//# sourceMappingURL=user.controller.js.map

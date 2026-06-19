@@ -1,0 +1,13 @@
+<svg width="220" height="60" viewBox="0 0 220 60" xmlns="http://www.w3.org/2000/svg">
+  <rect width="220" height="60" rx="12" fill="#0d0b1a"/>
+  <rect x="8" y="6" width="48" height="48" rx="12" fill="#7c3aed"/>
+  <rect x="12" y="10" width="40" height="40" rx="8" fill="#5b21b6"/>
+  <rect x="19" y="16" width="6" height="28" rx="3" fill="#a78bfa"/>
+  <rect x="27" y="16" width="6" height="28" rx="3" fill="#c4b5fd"/>
+  <rect x="35" y="16" width="6" height="28" rx="3" fill="#a78bfa"/>
+  <rect x="19" y="16" width="22" height="4" rx="2" fill="#ede9fe"/>
+  <path d="M43 14 L49 8 L49 14 Z" fill="#c084fc"/>
+  <text x="70" y="32" font-family="Bangers,cursive" font-size="30" fill="#ffffff" letter-spacing="1">MANGA</text>
+  <text x="70" y="54" font-family="Bangers,cursive" font-size="22" fill="#a78bfa" letter-spacing="3">PRO</text>
+  <line x1="70" y1="36" x2="188" y2="36" stroke="#3b2070" stroke-width="1"/>
+</svg>

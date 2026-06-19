@@ -1,0 +1,33 @@
+{
+  "name": "mangapro-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.x",
+    "axios": "1.x",
+    "date-fns": "3.x",
+    "lucide-react": "latest",
+    "next": "14.x",
+    "next-auth": "4.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "react-hot-toast": "2.x",
+    "sharp": "0.33.x",
+    "swiper": "11.x",
+    "tailwindcss": "3.x",
+    "typescript": "5.x",
+    "zustand": "4.x"
+  },
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.15"
+  }
+}

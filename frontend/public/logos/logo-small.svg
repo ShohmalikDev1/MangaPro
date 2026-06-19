@@ -1,0 +1,11 @@
+<svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="0" width="36" height="36" rx="9" fill="#7c3aed"/>
+  <rect x="3" y="3" width="30" height="30" rx="6" fill="#5b21b6"/>
+  <rect x="8" y="7" width="5" height="22" rx="2.5" fill="#a78bfa"/>
+  <rect x="15" y="7" width="5" height="22" rx="2.5" fill="#c4b5fd"/>
+  <rect x="22" y="7" width="5" height="22" rx="2.5" fill="#a78bfa"/>
+  <rect x="8" y="7" width="19" height="4" rx="2" fill="#ede9fe"/>
+  <path d="M25 5 L31 0 L31 5 Z" fill="#c084fc"/>
+  <text x="44" y="18" font-family="Bangers,cursive" font-size="17" fill="#1a1040" letter-spacing=".5">MANGA</text>
+  <text x="44" y="33" font-family="Bangers,cursive" font-size="13" fill="#7c3aed" letter-spacing="2">PRO</text>
+</svg>

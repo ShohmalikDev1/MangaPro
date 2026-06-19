@@ -1,0 +1,224 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  READER
+  TRANSLATOR
+  ADMIN
+}
+
+enum MangaType {
+  MANGA
+  MANHWA
+  MANHUA
+}
+
+enum Status {
+  ONGOING
+  COMPLETED
+  DROPPED
+}
+
+enum TranslateStatus {
+  ONGOING
+  COMPLETED
+  DROPPED
+}
+
+enum CoinTxnType {
+  PURCHASE
+  BONUS
+  SPEND
+}
+
+enum TxnStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotifType {
+  NEW_CHAPTER
+  COMMENT_REPLY
+  RATING
+  COIN_ADDED
+  REPORT
+}
+
+model User {
+  id            String    @id @default(cuid())
+  username      String    @unique
+  email         String    @unique
+  password      String?
+  googleId      String?   @unique
+  avatar        String?
+  role          Role      @default(READER)
+  coins         Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bookmarks     Bookmark[]
+  comments      Comment[]
+  ratings       Rating[]
+  coinTxns      CoinTransaction[]
+  readHistory   ReadHistory[]
+  notifications Notification[]
+  translations  Manga[]   @relation("Translator")
+}
+
+model Genre {
+  id     String         @id @default(cuid())
+  name   String         @unique
+  mangas GenreOnManga[]
+}
+
+model Tag {
+  id     String       @id @default(cuid())
+  name   String       @unique
+  mangas TagOnManga[]
+}
+
+model Manga {
+  id              String          @id @default(cuid())
+  title           String
+  slug            String          @unique
+  description     String
+  cover           String
+  type            MangaType
+  status          Status
+  translateStatus TranslateStatus
+  ageRating       String
+  releaseYear     Int
+  viewCount       Int             @default(0)
+  likeCount       Int             @default(0)
+  translatorId    String
+  translator      User            @relation("Translator", fields: [translatorId], references: [id])
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  genres          GenreOnManga[]
+  tags            TagOnManga[]
+  chapters        Chapter[]
+  comments        Comment[]
+  ratings         Rating[]
+  bookmarks       Bookmark[]
+  readHistory     ReadHistory[]
+}
+
+model GenreOnManga {
+  mangaId String
+  genreId String
+  manga   Manga  @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  @@id([mangaId, genreId])
+}
+
+model TagOnManga {
+  mangaId String
+  tagId   String
+  manga   Manga  @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  tag     Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  @@id([mangaId, tagId])
+}
+
+model Chapter {
+  id          String      @id @default(cuid())
+  mangaId     String
+  manga       Manga       @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  number      Int
+  volume      Int         @default(1)
+  title       String?
+  coinPrice   Int         @default(0)
+  createdAt   DateTime    @default(now())
+  pages       Page[]
+  readHistory ReadHistory[]
+  @@unique([mangaId, number])
+}
+
+model Page {
+  id         String  @id @default(cuid())
+  chapterId  String
+  chapter    Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  pageNumber Int
+  imageUrl   String
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  mangaId   String
+  status    String   @default("READING")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga     Manga    @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  @@unique([userId, mangaId])
+}
+
+model ReadHistory {
+  id        String   @id @default(cuid())
+  userId    String
+  mangaId   String
+  chapterId String
+  page      Int      @default(1)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga     Manga    @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  chapter   Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  updatedAt DateTime @updatedAt
+  @@unique([userId, mangaId])
+}
+
+model CoinTransaction {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  amount    Int
+  type      CoinTxnType
+  status    TxnStatus   @default(PENDING)
+  proofImg  String?
+  adminNote String?
+  createdAt DateTime    @default(now())
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  userId    String
+  mangaId   String
+  content   String    @db.VarChar(1000)
+  parentId  String?
+  likes     Int       @default(0)
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga     Manga     @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReply", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReply")
+}
+
+model Rating {
+  id           String   @id @default(cuid())
+  userId       String
+  mangaId      String
+  translatorId String
+  stars        Int
+  review       String?  @db.VarChar(1000)
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  manga        Manga    @relation(fields: [mangaId], references: [id], onDelete: Cascade)
+  @@unique([userId, mangaId])
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  type      NotifType
+  title     String
+  body      String
+  isRead    Boolean   @default(false)
+  link      String?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
